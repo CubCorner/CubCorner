@@ -7,19 +7,19 @@ module PawsMovin
     end
 
     def app_name
-      "Paws Movin'"
+      "CubHub"
     end
 
     def canonical_app_name
-      "Paws Movin'"
+      app_name
     end
 
     def description
-      "We keep your paws movin'!"
+      "Your source for all things cub."
     end
 
     def domain
-      "pawsmov.in"
+      "cubhub.net"
     end
 
     # Force rating:s on this version of the site.
@@ -42,7 +42,7 @@ module PawsMovin
     end
 
     def source_code_url
-      "https://github.com/PawsMovin/PawsMovin"
+      "https://github.com/CubHub/CubHub"
     end
 
     # Stripped of any special characters.
@@ -72,7 +72,7 @@ module PawsMovin
 
       def system_user
         User.find_or_create_by!(name: system_user_name, level: User::Levels::SYSTEM) do |user|
-          user.email = "system@pawsmov.in"
+          user.email = "system@cubhub.net"
           user.can_approve_posts = true
           user.unrestricted_uploads = true
         end

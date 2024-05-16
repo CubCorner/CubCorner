@@ -5,7 +5,7 @@
 <% elsif post.safeblocked? -%>
   <%# TODO: convert name & url to config option %>
   <p>This image is unavailable in safe mode (<%= PawsMovin.config.app_name %>). Go
-    to <%= link_to("PawsMovin", "https://pawsmov.in/posts/#{post.id}") %> or disable safe mode to view
+    to <%= link_to("CubCorner", "https://cubcorner.net/posts/#{post.id}") %> or disable safe mode to view
     (<%= link_to("learn more", help_page_path(id: "user_settings")) -%>).</p>
 <% elsif post.is_video? -%>
   <%= render("posts/partials/show/video", post: post) -%>

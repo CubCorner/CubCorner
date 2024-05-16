@@ -12,12 +12,12 @@
 ### Installation
 
 1. Download and install the [prerequisites](#prerequisites).
-2. Clone the repo with `git clone https://github.com/PawsMovin/PawsMovin.git`.
+2. Clone the repo with `git clone https://github.com/CubCorner/CubCorner.git`.
 3. `cd` into the repo.
 4. Copy the sample environment file with `cp .env.sample .env`.
 5. Run the following commands:
     ```
-    docker compose run --rm -e SEED_POST_COUNT=100 pawsmovin /app/bin/setup
+    docker compose run --rm -e SEED_POST_COUNT=100 cubcorner /app/bin/setup
     docker compose run --rm reports /app/bin/setup
     docker compose up
     ```
@@ -46,7 +46,7 @@ You're most likely using Windows. Give this a shot, it tells Git to stop trackin
 
 `docker compose run --rm rubocop` to run the linter.
 
-The postgres server accepts outside connections which you can use to access it with a local client. Use `localhost:34518` to connect to a database named `pawsmovin_development` with the user `pawsmovin`. Leave the password blank, anything will work.
+The postgres server accepts outside connections which you can use to access it with a local client. Use `localhost:34528` to connect to a database named `cubcorner_development` with the user `pawsmovin`. Leave the password blank, anything will work.
 
 ## Production Setup
 

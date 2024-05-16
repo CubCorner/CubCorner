@@ -65,5 +65,5 @@ server {
 }
 
 upstream app_server {
-  server pawsmovin:9000;
+  server cubcorner:9000;
 }
