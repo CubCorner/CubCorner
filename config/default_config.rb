@@ -7,7 +7,7 @@ module PawsMovin
     end
 
     def app_name
-      "CubHub"
+      "CubCorner"
     end
 
     def canonical_app_name
@@ -19,7 +19,7 @@ module PawsMovin
     end
 
     def domain
-      "cubhub.net"
+      "cubcorner.net"
     end
 
     # Force rating:s on this version of the site.
@@ -42,7 +42,7 @@ module PawsMovin
     end
 
     def source_code_url
-      "https://github.com/CubHub/CubHub"
+      "https://github.com/CubCorner/CubCorner"
     end
 
     # Stripped of any special characters.
@@ -72,7 +72,7 @@ module PawsMovin
 
       def system_user
         User.find_or_create_by!(name: system_user_name, level: User::Levels::SYSTEM) do |user|
-          user.email = "system@cubhub.net"
+          user.email = "system@cubcorner.net"
           user.can_approve_posts = true
           user.unrestricted_uploads = true
         end
