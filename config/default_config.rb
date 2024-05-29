@@ -464,7 +464,7 @@ module PawsMovin
       # hierarchical: false - store files in a single directory
       # hierarchical: true - store files in a hierarchical directory structure, based on the MD5 hash
       StorageManager::Local.new(base_dir: Rails.public_path.join("data").to_s, hierarchical: true)
-      # StorageManager::Ftp.new(ftp_hostname, ftp_port, ftp_username, ftp_password, base_dir: "", base_path: "", base_url: "https://static.pawsmov.in", hierarchical: true)
+      # StorageManager::Ftp.new(ftp_hostname, ftp_port, ftp_username, ftp_password, base_dir: "", base_path: "", base_url: "https://static.cubcorner.net", hierarchical: true)
 
       # Select the storage method based on the post's id and type (preview, large, or original).
       # StorageManager::Hybrid.new do |id, md5, file_ext, type|
@@ -704,7 +704,7 @@ module PawsMovin
         { name: "Already", text: "User already received a record for that message." },
         { name: "Banned", text: "This user is already banned." },
         { name: "Blacklist", text: "If you find the contents of that post objectionable, \"blacklist\":/help/blacklist it." },
-        { name: "Takedown", text: "Artists and character owners may request a takedown here: https://pawsmov.in/static/takedown.\nWe do not accept third party takedowns." },
+        { name: "Takedown", text: "Artists and character owners may request a takedown here: https://cubcorner.net/static/takedown.\nWe do not accept third party takedowns." },
       ]
     end
 

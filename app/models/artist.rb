@@ -93,6 +93,7 @@ class Artist < ApplicationRecord
         "e-hentai.org", # https://e-hentai.org/tag/artist:spirale
         "e621.net",
         "pawsmov.in",
+        "cubcorner.net",
         "e621.net/post/index/1", # https://e621.net/post/index/1/spirale
         "enty.jp", # https://enty.jp/aizawachihiro888
         "enty.jp/users", # https://enty.jp/users/3766

@@ -4,7 +4,7 @@ class Pool < ApplicationRecord
   class RevertError < StandardError
   end
 
-  array_attribute :post_ids, parse: %r{(?:https://pawsmov.in/posts/)?(\d+)}i, cast: :to_i
+  array_attribute :post_ids, parse: %r{(?:https://cubcorner.net/posts/)?(\d+)}i, cast: :to_i
   belongs_to_creator
 
   validates :name, uniqueness: { case_sensitive: false, if: :name_changed? }
