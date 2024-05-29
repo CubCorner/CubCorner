@@ -42,11 +42,6 @@ group :production do
   gem "pitchfork"
 end
 
-group :development, :test do
-  gem "listen"
-  gem "puma"
-end
-
 group :development do
   gem "debug", require: false
   gem "rubocop", require: false
@@ -69,3 +64,5 @@ end
 gem "faker", "~> 3.2"
 
 gem "pundit", "~> 2.3"
+
+gem "net-ftp", "~> 0.3.4"

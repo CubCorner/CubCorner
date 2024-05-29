@@ -370,7 +370,7 @@ let Note = {
       $dialog.data("uiDialog")._title = function(title) {
         title.html(this.options.title); // Allow unescaped html in dialog title
       }
-      $dialog.dialog("option", "title", 'Edit note #' + id + ' (<a href="/wiki_pages/help:notes">view help</a>)');
+      $dialog.dialog("option", "title", 'Edit note #' + id + ' (<a href="/help/notes">view help</a>)');
 
       $dialog.on("dialogclose.danbooru", function() {
         Note.editing = false;
@@ -407,7 +407,7 @@ let Note = {
     },
 
     error_handler: function(xhr, status, exception) {
-      Utility.error("Error: " + (xhr.responseJSON.reason || xhr.responseJSON.reasons.join("; ")));
+      Utility.error("Error: " + (xhr.responseJSON.reason || xhr.responseJSON.message));
     },
 
     success_handler: function(data, status, xhr) {

@@ -55,7 +55,7 @@ class PostVersion < ApplicationRecord
       end
 
       if params[:start_id].present?
-        must << { range: { id: {gte: params[:start_id].to_i } } }
+        must << { range: { id: { gte: params[:start_id].to_i } } }
       end
 
       if params[:rating].present?
@@ -112,7 +112,7 @@ class PostVersion < ApplicationRecord
         query:   { bool: { must: must, must_not: must_not } },
         sort:    { id: :desc },
         _source: false,
-        timeout: "#{CurrentUser.user.try(:statement_timeout) || 3_000}ms"
+        timeout: "#{CurrentUser.user.try(:statement_timeout) || 3_000}ms",
       }
     end
 
@@ -131,18 +131,18 @@ class PostVersion < ApplicationRecord
   include PostVersionIndex
 
   def self.queue(post)
-    self.create({
-        post_id:         post.id,
-        rating:          post.rating,
-        parent_id:       post.parent_id,
-        source:          post.source,
-        updater_id:      CurrentUser.id,
-        updater_ip_addr: CurrentUser.ip_addr,
-        tags:            post.tag_string,
-        original_tags:   post.tag_string_before_parse || "",
-        locked_tags:     post.locked_tags,
-        description:     post.description,
-        reason:          post.edit_reason
+    create({
+      post_id:         post.id,
+      rating:          post.rating,
+      parent_id:       post.parent_id,
+      source:          post.source,
+      updater_id:      CurrentUser.id,
+      updater_ip_addr: CurrentUser.ip_addr,
+      tags:            post.tag_string,
+      original_tags:   post.tag_string_before_parse || "",
+      locked_tags:     post.locked_tags,
+      description:     post.description,
+      reason:          post.edit_reason,
     })
   end
 
@@ -169,7 +169,7 @@ class PostVersion < ApplicationRecord
   end
 
   def fill_version
-    self.version = PostVersion.calculate_version(self.post_id)
+    self.version = PostVersion.calculate_version(post_id)
   end
 
   def fill_changes(prev = nil)
@@ -235,20 +235,23 @@ class PostVersion < ApplicationRecord
   end
 
   def visible?
-    post && post.visible?
+    post&.visible? || false
   end
 
   def diff_sources(version = nil)
+    latest_sources = post.source&.split("\n") || []
     new_sources = source&.split("\n") || []
     old_sources = version&.source&.split("\n") || []
 
     added_sources = new_sources - old_sources
     removed_sources = old_sources - new_sources
 
-    return {
-        added_sources:     added_sources,
-        unchanged_sources: new_sources & old_sources,
-        removed_sources:   removed_sources
+    {
+      added_sources:            added_sources,
+      unchanged_sources:        new_sources & old_sources,
+      removed_sources:          removed_sources,
+      obsolete_added_sources:   added_sources - latest_sources,
+      obsolete_removed_sources: removed_sources & latest_sources,
     }
   end
 
@@ -268,15 +271,15 @@ class PostVersion < ApplicationRecord
     added_locked = new_locked - old_locked
     removed_locked = old_locked - new_locked
 
-    return {
-        added_tags:            added_tags,
-        removed_tags:          removed_tags,
-        obsolete_added_tags:   added_tags - latest_tags,
-        obsolete_removed_tags: removed_tags & latest_tags,
-        unchanged_tags:        new_tags & old_tags,
-        added_locked_tags:     added_locked,
-        removed_locked_tags:   removed_locked,
-        unchanged_locked_tags: new_locked & old_locked
+    {
+      added_tags:            added_tags,
+      removed_tags:          removed_tags,
+      obsolete_added_tags:   added_tags - latest_tags,
+      obsolete_removed_tags: removed_tags & latest_tags,
+      unchanged_tags:        new_tags & old_tags,
+      added_locked_tags:     added_locked,
+      removed_locked_tags:   removed_locked,
+      unchanged_locked_tags: new_locked & old_locked,
     }
   end
 
@@ -289,18 +292,29 @@ class PostVersion < ApplicationRecord
   def changes
     return @changes if defined?(@changes)
 
+    new_sources = source&.split("\n") || []
+    old_sources = previous&.source&.split("\n") || []
+
     delta = {
-      added_tags:            added_tags,
-      removed_tags:          removed_tags,
-      obsolete_removed_tags: [],
-      obsolete_added_tags:   [],
-      unchanged_tags:        [],
+      added_tags:               added_tags,
+      removed_tags:             removed_tags,
+      obsolete_removed_tags:    [],
+      obsolete_added_tags:      [],
+      unchanged_tags:           [],
+      added_sources:            new_sources - old_sources,
+      removed_sources:          old_sources - new_sources,
+      obsolete_added_sources:   [],
+      obsolete_removed_sources: [],
+      unchanged_sources:        new_sources & old_sources,
     }
 
+    latest_sources = post.source&.split("\n") || []
     latest_tags = post.tag_array
     latest_tags << "rating:#{post.rating}" if post.rating.present?
     latest_tags << "parent:#{post.parent_id}" if post.parent_id.present?
     latest_tags << "source:#{post.source}" if post.source.present?
+    delta[:obsolete_added_sources] = delta[:added_sources] - latest_sources
+    delta[:obsolete_removed_sources] = delta[:removed_sources] & latest_sources
 
     if parent_changed
       if parent_id.present?
@@ -317,16 +331,6 @@ class PostVersion < ApplicationRecord
 
       if previous
         delta[:removed_tags] << "rating:#{previous.rating}"
-      end
-    end
-
-    if source_changed
-      if source.present?
-        delta[:added_tags] << "source:#{source}"
-      end
-
-      if previous
-        delta[:removed_tags] << "source:#{previous.source}"
       end
     end
 
@@ -365,19 +369,13 @@ class PostVersion < ApplicationRecord
     removed = changes[:removed_tags] - changes[:obsolete_removed_tags]
 
     added.each do |tag|
-      if tag =~ /^source:/
-      elsif tag =~ /^parent:/
-      else
-        escaped_tag = Regexp.escape(tag)
-        post.tag_string = post.tag_string.sub(/(?:\A| )#{escaped_tag}(?:\Z| )/, " ").strip
-      end
+      next if tag =~ /^parent:/ || tag =~ /^source:(.+)$/
+      escaped_tag = Regexp.escape(tag)
+      post.tag_string = post.tag_string.sub(/(?:\A| )#{escaped_tag}(?:\Z| )/, " ").strip
     end
     removed.each do |tag|
-      if tag =~ /^source:(.+)$/
-      elsif tag =~ /^parent:/
-      else
-        post.tag_string = "#{post.tag_string} #{tag}".strip
-      end
+      next if tag =~ /^parent:/ || tag =~ /^source:(.+)$/
+      post.tag_string = "#{post.tag_string} #{tag}".strip
     end
 
     post.edit_reason = "Undo of version #{version}"
@@ -394,23 +392,17 @@ class PostVersion < ApplicationRecord
 
   concerning :ApiMethods do
     def method_attributes
-      super + %i[obsolete_added_tags obsolete_removed_tags unchanged_tags updater_name]
-    end
-
-    def obsolete_added_tags
-      changes[:obsolete_added_tags].join(" ")
-    end
-
-    def obsolete_removed_tags
-      changes[:obsolete_removed_tags].join(" ")
+      super + %i[updater_name]
     end
 
     def original_tags_array
       @original_tags_array ||= original_tags.split
     end
 
-    def unchanged_tags
-      changes[:unchanged_tags].join(" ")
+    def serializable_hash(*)
+      hash = super
+      changes.each { |key, value| key.to_s.include?("tags") && value.is_a?(Array) ? hash[key] = value.join(" ") : hash[key] = value }
+      hash
     end
   end
 end

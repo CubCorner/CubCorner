@@ -4,19 +4,23 @@ class StaticController < ApplicationController
   respond_to :text, only: %i[robots]
 
   def privacy
-    @page = WikiPage.find_by(title: "help:privacy_policy")
+    @page = view_context.safe_wiki("help:privacy_policy")
   end
 
   def terms_of_service
-    @page = WikiPage.find_by(title: "help:terms_of_service")
+    @page = view_context.safe_wiki("help:terms_of_service")
   end
 
   def contact
-    @page = WikiPage.find_by(title: "help:contact")
+    @page = view_context.safe_wiki("help:contact")
   end
 
   def takedown
-    @page = WikiPage.find_by(title: "help:takedown")
+    @page = view_context.safe_wiki("help:takedown")
+  end
+
+  def staff
+    @page = view_context.safe_wiki("help:staff")
   end
 
   def not_found
@@ -41,19 +45,17 @@ class StaticController < ApplicationController
       user = CurrentUser.user
       user.disable_responsive_mode = !user.disable_responsive_mode
       user.save
+    elsif cookies[:nmm]
+      cookies.delete(:nmm)
     else
-      if cookies[:nmm]
-        cookies.delete(:nmm)
-      else
-        cookies.permanent[:nmm] = "1"
-      end
+      cookies.permanent[:nmm] = "1"
     end
     redirect_back(fallback_location: posts_path)
   end
 
   def discord
     unless CurrentUser.can_discord?
-      raise(User::PrivilegeError.new("You must have an account for at least one week in order to join the Discord server."))
+      raise(User::PrivilegeError, "You must have an account for at least one week in order to join the Discord server.")
     end
     if request.post?
       time = (Time.now + 5.minutes).to_i

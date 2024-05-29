@@ -2,6 +2,16 @@ openapi: "3.1.0"
 info:
   title: "CubCorner"
   version: "1"
+  termsOfService: "https://pawsmov.in/static/terms_of_service"
+  license:
+    name: MIT
+    url: "https://opensource.org/licenses/MIT"
+
+servers:
+  - url: "https://pawsmov.in"
+    description: "Production Server"
+  - url: "http://localhost:3001"
+    description: "Development server"
 
 x-constants:
   - &modaction-actions
@@ -959,8 +969,6 @@ components:
             forum_post_count:
               type: number
             comment_count:
-              type: number
-            flag_count:
               type: number
             favorite_count:
               type: number
@@ -2171,10 +2179,15 @@ components:
         - version
         - reason
         - original_tags
+        - updater_name
         - obsolete_added_tags
         - obsolete_removed_tags
         - unchanged_tags
-        - updater_name
+        - added_sources
+        - removed_sources
+        - obsolete_added_sources
+        - obsolete_removed_sources
+        - unchanged_sources
       properties:
         id:
           type: number
@@ -2228,14 +2241,34 @@ components:
           type: ["string", "null"]
         original_tags:
           type: string
+        updater_name:
+          type: string
         obsolete_added_tags:
           type: string
         obsolete_removed_tags:
           type: string
         unchanged_tags:
           type: string
-        updater_name:
-          type: string
+        added_sources:
+          type: array
+          items:
+            type: string
+        removed_sources:
+          type: array
+          items:
+            type: string
+        obsolete_added_sources:
+          type: array
+          items:
+            type: string
+        obsolete_removed_sources:
+          type: array
+          items:
+            type: string
+        unchanged_sources:
+          type: array
+          items:
+            type: string
     PostVote:
       allOf:
         - $ref: "#/components/schemas/LockableUserVote"
